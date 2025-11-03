@@ -105,7 +105,7 @@
       <p class="lead">Enter a username and click <strong>Add user</strong>. Added usernames appear in the list below. When ready, click Generate Word Document.</p>
 
       <div style="display:flex; gap:8px; align-items:center;">
-        <input id="movedUsername" type="text" placeholder="Enter the Username as it appears in Test" />
+        <input id="movedUsername" type="text" placeholder="Enter username (e.g. jsmith)" />
         <button class="btn" id="addMovedUser">Add user</button>
         <button class="btn secondary" id="clearMovedList" title="Clear moved list">Clear list</button>
       </div>
@@ -484,7 +484,7 @@
       html += `
         <h1 style="text-align:center; font-family:Arial, sans-serif;">User Creation Request</h1>
         <p style="text-align:center; font-family:Arial, sans-serif; font-size:14px;">
-          Please add the following users and attributes to the users listed below
+          Please add the following users and attributes to the Test Enviornment for the users listed below:
         </p>
         <div style="width:100%;">`;
 
@@ -518,8 +518,14 @@
     });
 
       html += '</div>'; // close cards container
+      html += `
+        <p style="text-align:center; font-family:Arial, sans-serif; font-size:14px;">
+          Please send the login cedentials directly to Kimberly.Ladavich@phila.gov & Mark.EvansJR@phila.gov.
+        </p>
+        <div style="width:100%;">`;
       html += '</body></html>';
-
+// Add  paragraph to the bottom
+      
       const blob = new Blob(['\ufeff', html], {type:'application/msword'});
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -564,6 +570,9 @@
             Please add the following users and attributes to the Test Enviornment for the users listed below:
           </p>
           <div style="width:100%;">${cardsHtml}</div>
+          <p style="text-align:center; font-size:14px; margin:0 0 12px 0;">
+            Please send the login cedentials to Kimberly.Ladavich@phila.gov & Mark.EvansJR@phila.gov
+          </p>
         </div>
       `;
 
