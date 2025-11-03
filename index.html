@@ -43,7 +43,7 @@
     h1 { margin:0 0 10px 0; font-size:20px; letter-spacing:-0.2px; }
     p.lead { margin:0 0 18px 0; color:var(--muted); font-size:13px; }
     label { display:block; font-size:13px; margin-bottom:6px; color:#0f172a; font-weight:600; }
-    input[type="text"], input[type="email"], select, .roles-input {
+    input[type="text"], input[type="email"], select, .roles-input, textarea {
       width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6eef8;
       background:#fff; box-sizing:border-box; outline:none; font-size:14px; margin-bottom:12px;
     }
@@ -79,11 +79,49 @@
     .small-quiet { font-size:12px; color:#9aa7bf; }
     .divider { border-bottom:2px solid var(--divider); margin:20px 0; }
     @media (max-width:980px){ .layout { grid-template-columns: 1fr; } }
+
+    /* small table for moved users */
+    .moved-table { width:100%; border-collapse:collapse; margin-top:12px; }
+    .moved-table th, .moved-table td { text-align:left; padding:8px; border-bottom:1px solid #e6eef8; }
+    .moved-table th { background:#f1f5f9; font-weight:700; }
   </style>
 </head>
 <body>
 
   <div class="layout">
+    <!-- Mode Selection -->
+    <div class="card">
+      <h1>Select Mode</h1>
+      <p class="lead">Choose whether you are creating new users or listing users moving from Test to Production.</p>
+      <div style="display:flex; gap:12px;">
+        <button class="btn" id="modeNew">New User</button>
+        <button class="btn secondary" id="modeMoved">User Moved from Test to Production</button>
+      </div>
+    </div>
+
+    <!-- Moved Users Card (sibling to formCard) -->
+    <div class="card" id="movedCard" style="display:none;">
+      <h1>Users Moved from Test to Production</h1>
+      <p class="lead">Enter a username and click <strong>Add user</strong>. Added usernames appear in the list below. When ready, click Generate Word Document.</p>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input id="movedUsername" type="text" placeholder="Enter the Username as it appears in Test" />
+        <button class="btn" id="addMovedUser">Add user</button>
+        <button class="btn secondary" id="clearMovedList" title="Clear moved list">Clear list</button>
+      </div>
+
+      <table class="moved-table" id="movedUsersTable" style="display:none;">
+        <thead>
+          <tr><th>Username</th><th style="width:110px">Action</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="controls" style="margin-top:12px;">
+        <button class="btn" id="exportMovedDoc">Generate Word Document</button>
+      </div>
+    </div>
+
     <!-- LEFT: form -->
     <div class="card" id="formCard">
       <h1>User Creation Document</h1>
@@ -114,59 +152,58 @@
       <div class="divider"></div>
 
       <div class="row">
-  <div class="col">
-    <label for="emailInput">Email</label>
-        <input id="emailInput" type="email" placeholder="Enter Users Email" />
-    </div>
-    <div class="col">
-        <label for="phoneInput">Phone Number</label>
-        <input id="phoneInput" type="text" placeholder="e.g. 555-123-4567" />
-    </div>
-    </div>
-
+        <div class="col">
+          <label for="emailInput">Email</label>
+          <input id="emailInput" type="email" placeholder="Enter Users Email" />
+        </div>
+        <div class="col">
+          <label for="phoneInput">Phone Number</label>
+          <input id="phoneInput" type="text" placeholder="e.g. 555-123-4567" />
+        </div>
+      </div>
 
       <div class="row">
-  <div class="col" style="flex:0 0 40%;">
-    <label for="supervisorInput">Supervisor</label>
-    <input id="supervisorInput" type="text" placeholder="Supervisor Name" />
-  </div>
-  <div class="col" style="flex:0 0 60%;">
-    <label for="departmentSelect">Department</label>
-    <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-      <select id="departmentSelect" style="flex:1;">
-        <option value="Select Department">Select Department</option>
-        <option value="ISC">ISC (Inspections Safety &amp; Compliance)</option>
-        <option value="CLIP">CLIP</option>
-        <option value="Dept of Commerce">Department of Commerce</option>
-        <option value="Department of Planning & Development">Department of Planning & Development</option>
-        <option value="Department of Public Health">Department of Public Health</option>
-        <option value="Historical Commission">Historical Commission</option>
-        <option value="L&I">L&amp;I</option>
-        <option value="Law Department">Law Department</option>
-        <option value="OIT">OIT</option>
-        <option value="Office Of Property Assessment">Office Of Property Assessment</option>
-        <option value="Office of Sustainability">Office of Sustainability</option>
-        <option value="Office of the City Controller">Office of the City Controller</option>
-        <option value="Pool Account">Pool Account</option>
-        <option value="Philadelphia Fire Department">Philadelphia Fire Department</option>
-        <option value="Philadelphia Water Department">Philadelphia Water Department</option>
-        <option value="Philly311">Philly311</option>
-        <option value="Quality of Life">Quality of Life</option>
-        <option value="Revenue">Renvenue</option>
-        <option value="Streets">Streets</option>
-      </select>
-      <button class="btn secondary" id="addDeptBtn">+ Add New</button>
-    </div>
+        <div class="col" style="flex:0 0 40%;">
+          <label for="supervisorInput">Supervisor</label>
+          <input id="supervisorInput" type="text" placeholder="Supervisor Name" />
+        </div>
+        <div class="col" style="flex:0 0 60%;">
+          <label for="departmentSelect">Department</label>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+            <select id="departmentSelect" style="flex:1;">
+              <option value="Select Department">Select Department</option>
+              <option value="ISC">ISC (Inspections Safety &amp; Compliance)</option>
+              <option value="CLIP">CLIP</option>
+              <option value="Dept of Commerce">Department of Commerce</option>
+              <option value="Department of Planning & Development">Department of Planning & Development</option>
+              <option value="Department of Public Health">Department of Public Health</option>
+              <option value="Historical Commission">Historical Commission</option>
+              <option value="L&I">L&amp;I</option>
+              <option value="Law Department">Law Department</option>
+              <option value="OIT">OIT</option>
+              <option value="Office Of Property Assessment">Office Of Property Assessment</option>
+              <option value="Office of Sustainability">Office of Sustainability</option>
+              <option value="Office of the City Controller">Office of the City Controller</option>
+              <option value="Pool Account">Pool Account</option>
+              <option value="Philadelphia Fire Department">Philadelphia Fire Department</option>
+              <option value="Philadelphia Water Department">Philadelphia Water Department</option>
+              <option value="Philly311">Philly311</option>
+              <option value="Quality of Life">Quality of Life</option>
+              <option value="Revenue">Renvenue</option>
+              <option value="Streets">Streets</option>
+            </select>
+            <button class="btn secondary" id="addDeptBtn">+ Add New</button>
+          </div>
 
-    <div id="addDeptArea" style="display:none; margin-bottom:12px;">
-      <input id="newDeptName" type="text" placeholder="New Department Name" />
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-        <button class="btn secondary" id="cancelNewDept">Cancel</button>
-        <button class="btn" id="saveNewDept">Save</button>
+          <div id="addDeptArea" style="display:none; margin-bottom:12px;">
+            <input id="newDeptName" type="text" placeholder="New Department Name" />
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+              <button class="btn secondary" id="cancelNewDept">Cancel</button>
+              <button class="btn" id="saveNewDept">Save</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
       <label for="rolesInput">Roles/Mimic</label>
       <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
@@ -183,7 +220,7 @@
     </div>
 
     <!-- RIGHT: table + export -->
-    <div class="card">
+    <div class="card" id="rightCard">
       <h1>Users Added</h1>
       <p class="lead">Added users appear here. You can remove rows, then export the list into a single Word document (.doc).</p>
 
@@ -205,15 +242,19 @@
         </table>
       </div>
 
-      <div class="controls" style="margin-top:12px;">
-  <button class="btn secondary" id="exportCsv" title="Download CSV">Download CSV</button>
-  <button class="btn" id="exportDoc">Export as Word (.doc)</button>
-  <button class="btn" id="exportPdf">Export as PDF (.pdf)</button>
-</div>
+      <!-- give this controls div an id so we can hide it in Moved mode -->
+      <div class="controls" id="rightControls" style="margin-top:12px;">
+        <button class="btn secondary" id="exportCsv" title="Download CSV">Download CSV</button>
+        <button class="btn" id="exportDoc">Export as Word (.doc)</button>
+        <button class="btn" id="exportPdf">Export as PDF (.pdf)</button>
+      </div>
     </div>
   </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
     // --- Helpers for name parsing and username generation ---
     const suffixes = ['jr','sr','ii','iii','iv','v','phd','md','esq','dr'];
 
@@ -276,10 +317,10 @@
     const clearFormBtn = document.getElementById('clearFormBtn');
 
     const usersTableBody = document.querySelector('#usersTable tbody');
-const exportDocBtn = document.getElementById('exportDoc');
-const exportCsvBtn = document.getElementById('exportCsv');
-const exportPdfBtn = document.getElementById('exportPdf');
-
+    const exportDocBtn = document.getElementById('exportDoc');
+    const exportCsvBtn = document.getElementById('exportCsv');
+    const exportPdfBtn = document.getElementById('exportPdf');
+    const rightControls = document.getElementById('rightControls');
 
     let roles = [];
     let users = [];
@@ -316,11 +357,6 @@ const exportPdfBtn = document.getElementById('exportPdf');
       refreshUsernamePreview();
     });
 
-    (function init(){ 
-      idNo.classList.add('btn'); 
-      if (identifierContainer) identifierContainer.style.display = 'none';
-      if (identifierInput) identifierInput.disabled = true;
-    })();
 
     // --- Roles management ---
     function renderRoles(){
@@ -428,132 +464,255 @@ const exportPdfBtn = document.getElementById('exportPdf');
       const link=document.createElement('a'); link.setAttribute('href',csvContent); link.setAttribute('download','users.csv'); link.click();
     });
 
-    // --- Export Word ---
-exportDocBtn.addEventListener('click', ()=>{
-    // --- Export PDF (html2pdf) ---
-exportPdfBtn.addEventListener('click', ()=> {
-  if(users.length === 0){ alert('No users to export'); return; }
+    // --- Export Word (for New User flow) ---
+    exportDocBtn.addEventListener('click', ()=>{
+      if(users.length===0){ alert('No users to export'); return; }
 
-  // Build the same *body* HTML content you want in the PDF (do NOT include full <html> wrapper)
-  const cardsHtml = users.map(u => `
-    <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
-      <tr>
-        <td>
-          <table style="width:100%; border:1px solid #000; border-radius:8px; padding:8px; font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse;">
-            <tr>
-              <td style="width:50%; padding:4px;"><strong>Full Name:</strong> ${u.name || ''}</td>
-              <td style="width:50%; padding:4px;"><strong>Username:</strong> ${u.username || ''}</td>
-            </tr>
-            <tr>
-              <td style="padding:4px;"><strong>Supervisor:</strong> ${u.supervisor || ''}</td>
-              <td style="padding:4px;"><strong>Department:</strong> ${u.department || ''}</td>
-            </tr>
-            <tr>
-              <td style="padding:4px;"><strong>Email:</strong> ${u.email || ''}</td>
-              <td style="padding:4px;"><strong>Phone:</strong> ${u.phone || ''}</td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:4px;"><strong>Roles:</strong> ${ (u.roles && u.roles.length) ? u.roles.join(', ') : '' }</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  `).join('');
+      let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+                    xmlns:w='urn:schemas-microsoft-com:office:word'
+                    xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                      <meta charset='utf-8'>
+                      <title>Users</title>
+                      <style>
+                        @page { size: landscape; }
+                      </style>
+                    </head>
+                    <body>`;
 
-  const content = `
-    <div style="font-family:Arial, sans-serif; padding:10px;">
-      <h1 style="text-align:center; margin:6px 0 4px 0;">User Creation Request</h1>
-      <p style="text-align:center; font-size:14px; margin:0 0 12px 0;">
-        Please add the following users and attributes to the users listed below
-      </p>
-      <div style="width:100%;">${cardsHtml}</div>
-    </div>
-  `;
+      // Add heading and paragraph at the top
+      html += `
+        <h1 style="text-align:center; font-family:Arial, sans-serif;">User Creation Request</h1>
+        <p style="text-align:center; font-family:Arial, sans-serif; font-size:14px;">
+          Please add the following users and attributes to the users listed below
+        </p>
+        <div style="width:100%;">`;
 
-  // Create a temporary container in DOM for html2pdf to convert
-  const container = document.createElement('div');
-  container.style.background = '#fff';
-  container.style.padding = '8px';
-  container.innerHTML = content;
-  document.body.appendChild(container);
+      // User cards
+      users.forEach((u) => {
+      html += `
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+          <tr>
+            <td>
+              <table style="width:100%; border:1px solid #000; border-radius:8px; padding:8px; font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse;">
+                <tr>
+                  <td style="width:50%; padding:4px;"><strong>Full Name:</strong> ${u.name}</td>
+                  <td style="width:50%; padding:4px;"><strong>Username:</strong> ${u.username}</td>
+                </tr>
+                <tr>
+                  <td style="padding:4px;"><strong>Supervisor:</strong> ${u.supervisor}</td>
+                  <td style="padding:4px;"><strong>Department:</strong> ${u.department}</td>
+                </tr>
+                <tr>
+                  <td style="padding:4px;"><strong>Email:</strong> ${u.email}</td>
+                  <td style="padding:4px;"><strong>Phone:</strong> ${u.phone}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding:4px;"><strong>Roles:</strong> ${u.roles.join(', ')}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      `;
+    });
 
-  // html2pdf options: landscape letter, higher quality rendering
-  const opt = {
-    margin: 0.4,
-    filename: `users_${new Date().toISOString().slice(0,10)}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-  };
+      html += '</div>'; // close cards container
+      html += '</body></html>';
 
-  // Generate and save the PDF; then remove the temporary node
-  html2pdf().set(opt).from(container).save()
-    .then(() => { document.body.removeChild(container); })
-    .catch(err => { console.error(err); document.body.removeChild(container); });
+      const blob = new Blob(['\ufeff', html], {type:'application/msword'});
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'users.doc';
+      link.click();
+    });
+
+    // --- Export PDF (for New User flow) ---
+    exportPdfBtn.addEventListener('click', ()=> {
+      if(users.length === 0){ alert('No users to export'); return; }
+
+      const cardsHtml = users.map(u => `
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
+          <tr>
+            <td>
+              <table style="width:100%; border:1px solid #000; border-radius:8px; padding:8px; font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse;">
+                <tr>
+                  <td style="width:50%; padding:4px;"><strong>Full Name:</strong> ${u.name || ''}</td>
+                  <td style="width:50%; padding:4px;"><strong>Username:</strong> ${u.username || ''}</td>
+                </tr>
+                <tr>
+                  <td style="padding:4px;"><strong>Supervisor:</strong> ${u.supervisor || ''}</td>
+                  <td style="padding:4px;"><strong>Department:</strong> ${u.department || ''}</td>
+                </tr>
+                <tr>
+                  <td style="padding:4px;"><strong>Email:</strong> ${u.email || ''}</td>
+                  <td style="padding:4px;"><strong>Phone:</strong> ${u.phone || ''}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding:4px;"><strong>Roles:</strong> ${ (u.roles && u.roles.length) ? u.roles.join(', ') : '' }</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      `).join('');
+
+      const content = `
+        <div style="font-family:Arial, sans-serif; padding:10px;">
+          <h1 style="text-align:center; margin:6px 0 4px 0;">User Creation Request</h1>
+          <p style="text-align:center; font-size:14px; margin:0 0 12px 0;">
+            Please add the following users and attributes to the Test Enviornment for the users listed below:
+          </p>
+          <div style="width:100%;">${cardsHtml}</div>
+        </div>
+      `;
+
+      const container = document.createElement('div');
+      container.style.background = '#fff';
+      container.style.padding = '8px';
+      container.innerHTML = content;
+      document.body.appendChild(container);
+
+      const opt = {
+        margin: 0.4,
+        filename: `users_${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+
+      html2pdf().set(opt).from(container).save()
+        .then(() => { document.body.removeChild(container); })
+        .catch(err => { console.error(err); document.body.removeChild(container); });
+    });
+
+    // --- Mode Switching (show/hide form + moved UI; hide right-side exports during Moved mode) ---
+    const modeNew = document.getElementById('modeNew');
+    const modeMoved = document.getElementById('modeMoved');
+    const formCard = document.getElementById('formCard');
+    const movedCard = document.getElementById('movedCard');
+
+    (function init(){ 
+        idNo.classList.add('btn'); 
+        if (identifierContainer) identifierContainer.style.display = 'none';
+        if (identifierInput) identifierInput.disabled = true;
+
+  // start in New User mode
+  modeNew.classList.remove('secondary');
+  modeMoved.classList.add('secondary');
+  formCard.style.display = 'block';
+  movedCard.style.display = 'none';
+  rightControls.style.display = 'flex';
+})();
+    modeNew.addEventListener('click', () => {
+  formCard.style.display = 'block';
+  movedCard.style.display = 'none';
+  rightCard.style.display = 'block';      // SHOW users added table
+  rightControls.style.display = 'flex';   // show original exports
+  modeNew.classList.remove('secondary');
+  modeMoved.classList.add('secondary');
 });
 
-  if(users.length===0){ alert('No users to export'); return; }
-
-  let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
-                xmlns:w='urn:schemas-microsoft-com:office:word'
-                xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                  <meta charset='utf-8'>
-                  <title>Users</title>
-                  <style>
-                    @page { size: landscape; }
-                  </style>
-                </head>
-                <body>`;
-
-  // Add heading and paragraph at the top
-  html += `
-    <h1 style="text-align:center; font-family:Arial, sans-serif;">User Creation Request</h1>
-    <p style="text-align:center; font-family:Arial, sans-serif; font-size:14px;">
-      Please add the following users and attributes to the users listed below
-    </p>
-    <div style="width:100%;">`;
-
-  // User cards
-  users.forEach((u) => {
-  html += `
-    <table style="width:100%; border-collapse:collapse; margin-bottom:12px;">
-      <tr>
-        <td>
-          <table style="width:100%; border:1px solid #000; border-radius:8px; padding:8px; font-family:Arial, sans-serif; font-size:14px; border-collapse:collapse;">
-            <tr>
-              <td style="width:50%; padding:4px;"><strong>Full Name:</strong> ${u.name}</td>
-              <td style="width:50%; padding:4px;"><strong>Username:</strong> ${u.username}</td>
-            </tr>
-            <tr>
-              <td style="padding:4px;"><strong>Supervisor:</strong> ${u.supervisor}</td>
-              <td style="padding:4px;"><strong>Department:</strong> ${u.department}</td>
-            </tr>
-            <tr>
-              <td style="padding:4px;"><strong>Email:</strong> ${u.email}</td>
-              <td style="padding:4px;"><strong>Phone:</strong> ${u.phone}</td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:4px;"><strong>Roles:</strong> ${u.roles.join(', ')}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  `;
+modeMoved.addEventListener('click', () => {
+  formCard.style.display = 'none';
+  movedCard.style.display = 'block';
+  rightCard.style.display = 'none';       // HIDE users added table
+  rightControls.style.display = 'none';   // hide original exports while in moved mode
+  modeMoved.classList.remove('secondary');
+  modeNew.classList.add('secondary');
 });
 
-  html += '</div>'; // close cards container
-  html += '</body></html>';
+    // --- Moved Users Add & Export ---
+    const movedUsers = [];
+    const movedTable = document.getElementById('movedUsersTable');
+    const movedBody = movedTable.querySelector('tbody');
+    const movedUsernameInput = document.getElementById('movedUsername');
+    const addMovedUserBtn = document.getElementById('addMovedUser');
+    const clearMovedListBtn = document.getElementById('clearMovedList');
+    const exportMovedBtn = document.getElementById('exportMovedDoc');
 
-  const blob = new Blob(['\ufeff', html], {type:'application/msword'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'users.doc';
-  link.click();
+    function renderMovedTable() {
+      movedBody.innerHTML = '';
+      if (movedUsers.length === 0) {
+        movedTable.style.display = 'none';
+        return;
+      }
+
+      movedTable.style.display = 'table';
+      movedUsers.forEach((name, index) => {
+        const row = document.createElement('tr');
+        const tdName = document.createElement('td');
+        tdName.textContent = name;
+        const tdAction = document.createElement('td');
+        const remBtn = document.createElement('button');
+        remBtn.className = 'btn secondary';
+        remBtn.textContent = 'Remove';
+        remBtn.addEventListener('click', ()=> { removeMovedUser(index); });
+        tdAction.appendChild(remBtn);
+        row.appendChild(tdName);
+        row.appendChild(tdAction);
+        movedBody.appendChild(row);
+      });
+    }
+
+    function removeMovedUser(index) {
+      movedUsers.splice(index, 1);
+      renderMovedTable();
+    }
+
+    addMovedUserBtn.addEventListener('click', ()=> {
+      const username = movedUsernameInput.value.trim();
+      if (!username) { alert('Please enter a username.'); return; }
+      movedUsers.push(username);
+      movedUsernameInput.value = '';
+      movedUsernameInput.focus();
+      renderMovedTable();
+    });
+
+    // also allow Enter key to add
+    movedUsernameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addMovedUserBtn.click(); }
+    });
+
+    clearMovedListBtn.addEventListener('click', ()=> {
+      if (!movedUsers.length) return;
+      if (!confirm('Clear all moved users?')) return;
+      movedUsers.length = 0;
+      renderMovedTable();
+    });
+
+    exportMovedBtn.addEventListener('click', ()=> {
+      if (movedUsers.length === 0) { alert('Please add at least one user.'); return; }
+
+      let html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+                        xmlns:w='urn:schemas-microsoft-com:office:word'
+                        xmlns='http://www.w3.org/TR/REC-html40'>
+                        <head><meta charset='utf-8'><title>Reqest to Copy Users</title></head>
+                        <body style="font-family:Arial, sans-serif;">`;
+
+      html += `<h1 style="text-align:center;">Copy Users To Production Request</h1>
+               <p style="text-align:left;">Please copy the following users & their attributes from the Test Enviornment to Production:</p>
+               <ul style="font-size:14px; line-height:1.6;">`;
+
+      movedUsers.forEach(name => {
+        html += `<li>${name}</li>`;
+      });
+
+      html += `</ul>
+      <p style="margin-top:10px;">No new account creation is required.</p>
+      <p>Please confirm login credentials with <a href="mailto:Kimberly.Ladavich@phila.gov">Kimberly.Ladavich@phila.gov</a> &amp; <a href="mailto:Mark.EvansJR@phila.gov">Mark.EvansJR@phila.gov</a> once the accounts are created.</p>
+      </body></html>`;
+
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+      const link = document.createElement('a');
+      // add date in filename to be explicit
+      const date = new Date().toISOString().slice(0,10);
+      link.href = URL.createObjectURL(blob);
+      link.download = `moved_users_${date}.doc`;
+      link.click();
+    });
 });
-
+    // done
   </script>
 </body>
 </html>
